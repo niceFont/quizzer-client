@@ -4,22 +4,29 @@ import './assets/main.css';
 import Home from './views/Home';
 import NavBar from './components/NavBar';
 import Quiz from './views/Quiz';
+import Create from './views/Create';
 import NoMatch from './views/NoMatch';
+import Container from './components/Container';
 
 const App = () => (
   <Router>
     <NavBar />
-    <Switch>
-      <Route exact path="/">
-        <Home />
-      </Route>
-      <Route path="/quiz/:quizId">
-        <Quiz />
-      </Route>
-      <Route path="*">
-        <NoMatch />
-      </Route>
-    </Switch>
+    <Container>
+      <Switch>
+        <Route exact path="/">
+          <Home />
+        </Route>
+        <Route path="/create">
+          <Create />
+        </Route>
+        <Route path="/quiz/:quizId">
+          <Quiz />
+        </Route>
+        <Route path="*">
+          <NoMatch />
+        </Route>
+      </Switch>
+    </Container>
   </Router>
 );
 

@@ -3,6 +3,7 @@
 
 import { useRef, useReducer, useEffect } from 'react';
 
+// Fetch Data from the server with specified timeout
 const fetchWithTimeout = (url, options = {}, time = 5000) => {
   const controller = new AbortController();
   const config = { ...options, signal: controller.signal };
@@ -26,14 +27,16 @@ const fetchWithTimeout = (url, options = {}, time = 5000) => {
     });
 };
 
-function useRequest(url) {
+function useRequest(url, options) {
+  // Cache Requests between reloads
   const cache = useRef({});
 
   const initialState = {
     status: 'idle',
     error: null,
-    data: [],
+    data: null,
   };
+  // Different loading states for our request
   const [state, dispatch] = useReducer((currentState, action) => {
     switch (action.type) {
       case 'FETCHING':
@@ -51,16 +54,22 @@ function useRequest(url) {
     if (!url) return undefined;
     const fetchData = async () => {
       dispatch({ type: 'FETCHING' });
+      // TODO: doesnt work as intended, lets just keep it in and fix it later ;)
       if (cache.current[url]) {
         dispatch({ type: 'FETCHED', payload: cache.current[url] });
       } else {
         try {
           const response = await fetchWithTimeout(url, {
+            ...options,
             mode: 'cors',
           });
-          const data = await response.json();
-          cache.current[url] = data;
-          dispatch({ type: 'FETCHED', payload: data });
+          if (response.status === 204) {
+            dispatch({ type: 'FETCHED', payload: null });
+          } else {
+            const data = await response.json();
+            cache.current[url] = data;
+            dispatch({ type: 'FETCHED', payload: data });
+          }
         } catch (error) {
           dispatch({ type: 'ERROR', payload: error });
         }
