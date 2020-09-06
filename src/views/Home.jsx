@@ -76,7 +76,7 @@ const Home = () => {
           </motion.div>
         ))}
       </motion.div>
-      <span className="font-semibold text-2xl text-gray-600">Create awesome Quizzes and be surprised by your friends knowledge!</span>
+      <span className="font-semibold text-2xl text-gray-600">Create awesome Quizzes and test your friends knowledge!</span>
       <Link className="mt-10" to="/create">
         <button className="px-12 uppercase transition transform duration-300 ease-in-out hover:rotate-0 hover:scale-110 -rotate-3 bg-purple-600 hover:bg-purple-400 rounded-lg text-white font-bold h-12" type="button">Get Started</button>
       </Link>

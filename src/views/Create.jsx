@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import DropdownButton from '../components/DropdownButton';
 import useRequest from '../hooks/useRequest';
 import Spinner from '../components/Spinner';
 import NotFound from '../components/NotFound';
 import FetchError from '../components/FetchError';
 import UrlCopy from '../components/UrlCopy';
+import Alert from '../components/Alert';
 
 const { API_URL } = process.env;
 
-const SubmitView = ({ quizObject, questionsObject }) => {
-  console.log(questionsObject);
+const SubmitView = ({ quizObject, questionsObject, handleBack }) => {
   const format = (questions) => [...Object.values(questions)].map((question) => {
     if (question.type === 'choice') {
       return {
@@ -19,7 +20,6 @@ const SubmitView = ({ quizObject, questionsObject }) => {
     }
     return question;
   });
-  format(questionsObject);
   const response = useRequest(`${API_URL}/quiz/create`, {
     method: 'POST',
     headers: {
@@ -30,7 +30,19 @@ const SubmitView = ({ quizObject, questionsObject }) => {
   return (
     <div className="w-full flex items-center justify-center">
       {response.status === 'fetching' && <Spinner>Creating your Quiz...</Spinner>}
-      {response.status === 'error' && <FetchError />}
+      {response.status === 'error' && (
+      <div>
+        <FetchError />
+        <div className="w-full flex items-center justify-center">
+          <button onClick={handleBack} className="mt-10 text-purple-600 border py-2 px-2 rounded-md inline-flex items-center" type="button">
+            <svg className="svg-icon w-5 mr-4" viewBox="0 0 20 20">
+              <path fill="currentColor" d="M8.388,10.049l4.76-4.873c0.303-0.31,0.297-0.804-0.012-1.105c-0.309-0.304-0.803-0.293-1.105,0.012L6.726,9.516c-0.303,0.31-0.296,0.805,0.012,1.105l5.433,5.307c0.152,0.148,0.35,0.223,0.547,0.223c0.203,0,0.406-0.08,0.559-0.236c0.303-0.309,0.295-0.803-0.012-1.104L8.388,10.049z" />
+            </svg>
+            Go Back
+          </button>
+        </div>
+      </div>
+      )}
       {response.status === 'fetched' && !response.data && <NotFound />}
       {response.status === 'fetched' && response.data && (
         <div className="w-full flex items-center justify-center flex-col">
@@ -40,7 +52,7 @@ const SubmitView = ({ quizObject, questionsObject }) => {
               <path d="M10.219,1.688c-4.471,0-8.094,3.623-8.094,8.094s3.623,8.094,8.094,8.094s8.094-3.623,8.094-8.094S14.689,1.688,10.219,1.688 M10.219,17.022c-3.994,0-7.242-3.247-7.242-7.241c0-3.994,3.248-7.242,7.242-7.242c3.994,0,7.241,3.248,7.241,7.242C17.46,13.775,14.213,17.022,10.219,17.022 M15.099,7.03c-0.167-0.167-0.438-0.167-0.604,0.002L9.062,12.48l-2.269-2.277c-0.166-0.167-0.437-0.167-0.603,0c-0.166,0.166-0.168,0.437-0.002,0.603l2.573,2.578c0.079,0.08,0.188,0.125,0.3,0.125s0.222-0.045,0.303-0.125l5.736-5.751C15.268,7.466,15.265,7.196,15.099,7.03" />
             </svg>
           </div>
-          <UrlCopy className="mt-12" url={`${window.location.host}/quiz/${response.data.id}`} />
+          <UrlCopy className="mt-12" url={`${window.location.host}/quiz/${response.data.quizID}`} />
         </div>
       )}
     </div>
@@ -52,6 +64,9 @@ const Create = () => {
   const [quizDescr, setDescr] = useState('');
   const [currIndex, setCurrIndex] = useState(1);
   const [submitted, toggleSubmit] = useState(false);
+  const {
+    register, handleSubmit, watch, errors,
+  } = useForm();
   const [quiz, setQuiz] = useState({
     1: {
       question: '',
@@ -59,6 +74,10 @@ const Create = () => {
       type: 'input',
     },
   });
+  console.log(errors);
+  const handleBack = () => {
+    toggleSubmit(false);
+  };
   const handleAddOption = (parentKey) => {
     if (Object.keys(quiz[parentKey].options).length < 8) {
       setCurrIndex(currIndex + 1);
@@ -137,16 +156,44 @@ const Create = () => {
     <>
       {submitted ? (
         <SubmitView
+          handleBack={handleBack}
           quizObject={{ name: quizTitle, description: quizDescr }}
           questionsObject={quiz}
         />
       )
         : (
-          <div className="flex flex-col w-full items-center justify-center">
+          <form onSubmit={handleSubmit(() => toggleSubmit(true))} className="flex flex-col w-full items-center justify-center">
+            {!!Object.keys(errors).length
+            && (
+            <Alert>
+              Oops, seems like you did not complete all the necessary steps
+              {' '}
+              <span role="img" aria-label="alert-emoji">😳</span>
+            </Alert>
+            )}
             <span className="text-3xl">{quizTitle}</span>
             <span className="w-full mt-2 mb-8 border border-b-1" />
-            <input onChange={(e) => setTitle(e.target.value)} className="form-input border rounded-lg h-10 mb-6 w-6/12" placeholder="Enter the quiz title..." type="text" />
-            <textarea onChange={(e) => setDescr(e.target.value)} placeholder="Write a short description..." className="w-6/12 form-textarea border resize-none rounded-lg" />
+            <input
+              ref={register({
+                required: true,
+                maxLength: 144,
+              })}
+              name="quiz-title"
+              onChange={(e) => setTitle(e.target.value)}
+              className="form-input border rounded-lg h-10 mb-6 w-6/12"
+              placeholder="Enter the quiz title..."
+              type="text"
+            />
+            <textarea
+              name="quiz-descr"
+              ref={register({
+                required: false,
+                maxLength: 250,
+              })}
+              onChange={(e) => setDescr(e.target.value)}
+              placeholder="Write a short description..."
+              className="w-6/12 form-textarea border resize-none rounded-lg"
+            />
             <span className="w-full mt-8 mb-4 border border-b-1" />
             <div className="w-full flex justify-end mb-8">
               <DropdownButton title="Add Question">
@@ -169,12 +216,22 @@ const Create = () => {
               <div className="flex my-2 items-center flex-col" key={key}>
                 <div className="flex items-center">
                   <input
+                    name={`question-${key}`}
                     onChange={(event) => handleInput(event, key, 'question')}
+                    ref={register({
+                      required: true,
+                      maxLength: 144,
+                    })}
                     className="mx-2 form-input border rounded-lg"
                     placeholder="Enter the Question"
                     type="text"
                   />
                   <input
+                    name={`answer-${key}`}
+                    ref={register({
+                      required: true,
+                      maxLength: 144,
+                    })}
                     onChange={(event) => handleInput(event, key, 'answer')}
                     className="mx-2 form-input border rounded-lg"
                     placeholder="Enter the Answer"
@@ -197,6 +254,11 @@ const Create = () => {
                       {Object.entries(quiz[key].options).map(([childKey]) => (
                         <div className="flex my-2 items-center" key={childKey}>
                           <input
+                            name={`option-${key}-${childKey}`}
+                            ref={register({
+                              required: true,
+                              maxLength: 60,
+                            })}
                             onChange={(event) => handleOptionInput(event, key, childKey)}
                             className="mx-2 form-input border rounded-lg"
                             placeholder="Enter an Option"
@@ -216,8 +278,8 @@ const Create = () => {
                 )}
               </div>
             ))}
-            <button onClick={() => toggleSubmit(true)} className="transition duration-300 transform ease-in-out hover:scale-105 bg-purple-700 hover:bg-purple-600 uppercase text-white rounded-lg w-6/12 mt-24 h-10 font-bold" type="button">Create</button>
-          </div>
+            <input type="submit" className="cursor-pointer transition duration-300 transform ease-in-out hover:scale-105 bg-purple-700 hover:bg-purple-600 uppercase text-white rounded-lg w-6/12 mt-24 h-10 font-bold" />
+          </form>
         )}
     </>
   );

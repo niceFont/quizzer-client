@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -13,6 +14,11 @@ const NavBar = () => (
         </div>
         <div className="mx-2">
           <Link to="/create">Create</Link>
+        </div>
+        <div className="w-6 flex items-center mx-2">
+          <a target="_blank" rel="noreferrer" href="https://github.com/niceFont/quizzer-client">
+            <img src={require('../assets/GitHub-Mark-Light-64px.png')} alt="githubImage" />
+          </a>
         </div>
       </div>
     </div>
