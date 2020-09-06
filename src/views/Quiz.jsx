@@ -1,20 +1,14 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import useRequest from '../hooks/useRequest';
-import Tooltip from '../components/Tooltip';
+import UrlCopy from '../components/UrlCopy';
+import Spinner from '../components/Spinner';
+import NotFound from '../components/NotFound';
+import FetchError from '../components/FetchError';
 
 const { API_URL } = process.env;
-
-const Spinner = () => (
-  <div className="flex flex-col justify-center items-center">
-    <svg className="animate-spin h-12 w-12 mr-3" viewBox="0 0 24 24">
-      <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-    </svg>
-    <span className="mt-5 font-semibold">Loading your awesome questions...</span>
-  </div>
-);
 
 const ResultsTable = ({ results }) => (
   <table className="border-collapse w-full">
@@ -72,7 +66,7 @@ const ResultsBoard = ({ handleReset, id, userInput }) => {
     >
       {response.status === 'fetching' && <Spinner />}
       {response.status === 'error' && <FetchError error={response.error.message} />}
-      {response.status === 'fetched' && !response.data && <QuizNotFound />}
+      {response.status === 'fetched' && !response.data && <NotFound />}
       {response.status === 'fetched' && response.data.length
       && (
       <div className="flex flex-col items-center justify-center">
@@ -93,20 +87,20 @@ const ResultsBoard = ({ handleReset, id, userInput }) => {
   );
 };
 const QuizCard = ({ question, handleInput, id }) => (
-  <div className="flex rounded mx-auto items-center inset-0 bg-white text-black shadow-lg h-48 w-72 p-10 flex-col justify-center">
+  <div className="flex rounded mx-auto items-center inset-0 bg-white text-black shadow-lg h-48 w-72 p-4 flex-col justify-center">
     <div className="mb-3 text-center">
       <span className="capitalize">{question.question}</span>
     </div>
     {question.type === 'choice'
       ? (
-        <>
+        <div className="flex flex-row flex-wrap w-full max-w-sm">
           {question.options.map((option) => (
-            <div key={option}>
+            <div className="w-6/12" key={option}>
               <input onChange={(event) => handleInput(event, id)} className="form-radio mx-2 text-purple-600" name="question-options" id={option} type="radio" value={option} />
-              <label htmlFor={option}>{option}</label>
+              <label className="cursor-pointer" htmlFor={option}>{option}</label>
             </div>
           ))}
-        </>
+        </div>
       )
       : (
         <div>
@@ -217,47 +211,16 @@ const QuizRenderer = ({ quiz }) => {
   );
 };
 
-const QuizNotFound = () => (
-  <div className="flex text-purple-800 flex-col justify-center items-center">
-    <span className="font-extrabold text-6xl">404</span>
-    <span>Sorry, we could not find what you were looking for...</span>
-  </div>
-);
-
-const FetchError = () => (
-  <div className="flex text-purple-800 flex-col justify-center items-center">
-    <span className="font-extrabold text-6xl">Oops.</span>
-    <span>There was an error while loading, please try again</span>
-  </div>
-);
-
 const Quiz = () => {
   const { quizId } = useParams();
-  const [tooltip, showTooltip] = useState(false);
-  const handleCopy = useCallback(() => {
-    showTooltip(true);
-    setTimeout(showTooltip.bind(null, false), 500);
-    const url = document.getElementById('shareInput');
-    url.select();
-    document.execCommand('copy');
-  });
   const response = useRequest(`${API_URL}/quiz/${quizId}`);
   return (
     <div className="flex flex-col items-center justify-center">
-      {response.status === 'fetching' && <Spinner />}
+      {response.status === 'fetching' && <Spinner>Loading your awesome questions...</Spinner>}
       {response.status === 'error' && <FetchError error={response.error.message} />}
-      {response.status === 'fetched' && !response.data && <QuizNotFound />}
+      {response.status === 'fetched' && !response.data && <NotFound />}
       {response.status === 'fetched' && response.data && <QuizRenderer quiz={response.data} />}
-      <div className="mt-48 w-4/12 justify-center items-center flex flex-col">
-        <span className="font-semibold">Share this quiz with somebody you know!</span>
-        <div className="flex flex-row">
-          <input readOnly id="shareInput" className="border-gray-300 h-8 border" type="text" name="shareUrl" value={`${window.location.host}/quiz/${quizId}`} />
-          <div className="flex flex-col">
-            {tooltip && <Tooltip>Copied!</Tooltip>}
-            <button type="button" onClick={handleCopy} className="h-8 px-6 transition duration-300 ease-in-out transform hover:scale-105 bg-blue-600 hover:bg-blue-500 rounded text-white">Copy</button>
-          </div>
-        </div>
-      </div>
+      <UrlCopy className="mt-24" url={`${window.location.host}/quiz/${quizId}`} />
     </div>
   );
 };
