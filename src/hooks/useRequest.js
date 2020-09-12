@@ -54,7 +54,7 @@ function useRequest(url, options) {
     if (!url) return undefined;
     const fetchData = async () => {
       dispatch({ type: 'FETCHING' });
-      // TODO: doesnt work as intended, lets just keep it in and fix it later ;)
+      // REVIEW doesnt work as intended, lets just keep it in and fix it later ;)
       if (cache.current[url]) {
         dispatch({ type: 'FETCHED', payload: cache.current[url] });
       } else {

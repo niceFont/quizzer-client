@@ -8,6 +8,8 @@ import Create from './views/Create';
 import NoMatch from './views/NoMatch';
 import Container from './components/Container';
 
+// TODO responsive design
+// TODO build automatic deployment
 const App = () => (
   <Router>
     <NavBar />

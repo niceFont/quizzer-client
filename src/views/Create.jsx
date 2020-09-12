@@ -10,9 +10,12 @@ import Alert from '../components/Alert';
 
 const { API_URL } = process.env;
 
+// TODO prop validation may not be a bad idea
 const SubmitView = ({ quizObject, questionsObject, handleBack }) => {
   const format = (questions) => [...Object.values(questions)].map((question) => {
     if (question.type === 'choice') {
+      // eslint-disable-next-line no-param-reassign
+      delete question.currOptionIndex;
       return {
         ...question,
         options: Object.values(question.options).map((item) => item.option),
@@ -20,6 +23,7 @@ const SubmitView = ({ quizObject, questionsObject, handleBack }) => {
     }
     return question;
   });
+  console.log({ ...quizObject, questions: format(questionsObject) });
   const response = useRequest(`${API_URL}/quiz/create`, {
     method: 'POST',
     headers: {
@@ -65,7 +69,7 @@ const Create = () => {
   const [currIndex, setCurrIndex] = useState(1);
   const [submitted, toggleSubmit] = useState(false);
   const {
-    register, handleSubmit, watch, errors,
+    register, handleSubmit, errors,
   } = useForm();
   const [quiz, setQuiz] = useState({
     1: {
@@ -74,7 +78,6 @@ const Create = () => {
       type: 'input',
     },
   });
-  console.log(errors);
   const handleBack = () => {
     toggleSubmit(false);
   };
@@ -151,7 +154,7 @@ const Create = () => {
       }));
     }
   };
-
+  // TODO show an overview of the created quiz
   return (
     <>
       {submitted ? (
@@ -226,6 +229,7 @@ const Create = () => {
                     placeholder="Enter the Question"
                     type="text"
                   />
+                  {/* TODO Make answer a selectable field for multiple choice questions */}
                   <input
                     name={`answer-${key}`}
                     ref={register({
