@@ -13,9 +13,11 @@ const { API_URL } = process.env;
 // TODO prop validation may not be a bad idea
 const SubmitView = ({ quizObject, questionsObject, handleBack }) => {
   const format = (questions) => [...Object.values(questions)].map((question) => {
+    // eslint-disable-next-line no-param-reassign
+    delete question.currOptionIndex;
+    // eslint-disable-next-line no-param-reassign
+    if (question.options === null) delete question.options;
     if (question.type === 'choice') {
-      // eslint-disable-next-line no-param-reassign
-      delete question.currOptionIndex;
       return {
         ...question,
         options: Object.values(question.options).map((item) => item.option),
@@ -23,7 +25,6 @@ const SubmitView = ({ quizObject, questionsObject, handleBack }) => {
     }
     return question;
   });
-  console.log({ ...quizObject, questions: format(questionsObject) });
   const response = useRequest(`${API_URL}/quiz/create`, {
     method: 'POST',
     headers: {
@@ -183,7 +184,7 @@ const Create = () => {
               })}
               name="quiz-title"
               onChange={(e) => setTitle(e.target.value)}
-              className="form-input border rounded-lg h-10 mb-6 w-6/12"
+              className="form-input border rounded-lg h-10 mb-6 w-9/12 md:w-8/12 lg:w-6/12"
               placeholder="Enter the quiz title..."
               type="text"
             />
@@ -195,7 +196,7 @@ const Create = () => {
               })}
               onChange={(e) => setDescr(e.target.value)}
               placeholder="Write a short description..."
-              className="w-6/12 form-textarea border resize-none rounded-lg"
+              className="w-9/12 md:w-8/12 lg:w-6/12 form-textarea border resize-none rounded-lg"
             />
             <span className="w-full mt-8 mb-4 border border-b-1" />
             <div className="w-full flex justify-end mb-8">
@@ -217,7 +218,7 @@ const Create = () => {
             </div>
             {Object.entries(quiz).map(([key, value]) => (
               <div className="flex my-2 items-center flex-col" key={key}>
-                <div className="flex items-center">
+                <div className="flex flex-col-reverse shadow-md rounded-md lg:shadow-none p-6 lg:p-2 lg:flex-row items-center ">
                   <input
                     name={`question-${key}`}
                     onChange={(event) => handleInput(event, key, 'question')}
@@ -225,7 +226,7 @@ const Create = () => {
                       required: true,
                       maxLength: 144,
                     })}
-                    className="mx-2 form-input border rounded-lg"
+                    className="mx-2 my-2 lg:my-0 form-input border rounded-lg"
                     placeholder="Enter the Question"
                     type="text"
                   />
@@ -241,20 +242,22 @@ const Create = () => {
                     placeholder="Enter the Answer"
                     type="text"
                   />
-                  <button onClick={() => handleDelete(key)} className="transition duration-300 transform ease-in-out hover:scale-125 text-red-500 mx-2 rounded-lg h-8 w-8" type="button">
-                    <svg className="svg-icon " viewBox="0 0 20 20">
-                      <path fill="currentColor" d="M12.71,7.291c-0.15-0.15-0.393-0.15-0.542,0L10,9.458L7.833,7.291c-0.15-0.15-0.392-0.15-0.542,0c-0.149,0.149-0.149,0.392,0,0.541L9.458,10l-2.168,2.167c-0.149,0.15-0.149,0.393,0,0.542c0.15,0.149,0.392,0.149,0.542,0L10,10.542l2.168,2.167c0.149,0.149,0.392,0.149,0.542,0c0.148-0.149,0.148-0.392,0-0.542L10.542,10l2.168-2.168C12.858,7.683,12.858,7.44,12.71,7.291z M10,1.188c-4.867,0-8.812,3.946-8.812,8.812c0,4.867,3.945,8.812,8.812,8.812s8.812-3.945,8.812-8.812C18.812,5.133,14.867,1.188,10,1.188z M10,18.046c-4.444,0-8.046-3.603-8.046-8.046c0-4.444,3.603-8.046,8.046-8.046c4.443,0,8.046,3.602,8.046,8.046C18.046,14.443,14.443,18.046,10,18.046z" />
-                    </svg>
-                  </button>
+                  <div className="w-full lg:w-12 flex items-end justify-end mb-4 lg:mb-0">
+                    <button onClick={() => handleDelete(key)} className="transition duration-300 transform ease-in-out hover:scale-125 text-red-500 mx-2 rounded-lg h-8 w-8" type="button">
+                      <svg className="svg-icon " viewBox="0 0 20 20">
+                        <path fill="currentColor" d="M12.71,7.291c-0.15-0.15-0.393-0.15-0.542,0L10,9.458L7.833,7.291c-0.15-0.15-0.392-0.15-0.542,0c-0.149,0.149-0.149,0.392,0,0.541L9.458,10l-2.168,2.167c-0.149,0.15-0.149,0.393,0,0.542c0.15,0.149,0.392,0.149,0.542,0L10,10.542l2.168,2.167c0.149,0.149,0.392,0.149,0.542,0c0.148-0.149,0.148-0.392,0-0.542L10.542,10l2.168-2.168C12.858,7.683,12.858,7.44,12.71,7.291z M10,1.188c-4.867,0-8.812,3.946-8.812,8.812c0,4.867,3.945,8.812,8.812,8.812s8.812-3.945,8.812-8.812C18.812,5.133,14.867,1.188,10,1.188z M10,18.046c-4.444,0-8.046-3.603-8.046-8.046c0-4.444,3.603-8.046,8.046-8.046c4.443,0,8.046,3.602,8.046,8.046C18.046,14.443,14.443,18.046,10,18.046z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <span className="w-full mt-2 border border-b-1" />
                 {value.type === 'choice' && (
-                <div className="flex w-full flex-col items-center bg-gray-200 py-5">
+                <div className="flex w-full md:flex-row flex-col items-center bg-gray-200 py-5">
                   <div className="w-full flex flex-col">
                     <div className="w-full flex justify-end">
                       <button onClick={() => handleAddOption(key)} type="button" className="transition duration-300 ease-in-out hover:bg-gray-100 border hover:text-gray leading-5 px-2 py-2 rounded mx-2 bg-white">Add Option</button>
                     </div>
-                    <div className="w-full max-w-3xl flex flex-wrap flex-row">
+                    <div className="w-full max-w-3xl flex flex-wrap flex-col lg:flex-row">
                       {Object.entries(quiz[key].options).map(([childKey]) => (
                         <div className="flex my-2 items-center" key={childKey}>
                           <input
@@ -282,7 +285,7 @@ const Create = () => {
                 )}
               </div>
             ))}
-            <input type="submit" className="cursor-pointer transition duration-300 transform ease-in-out hover:scale-105 bg-purple-700 hover:bg-purple-600 uppercase text-white rounded-lg w-6/12 mt-24 h-10 font-bold" />
+            <input type="submit" className="cursor-pointer transition duration-300 transform ease-in-out hover:scale-105 bg-purple-700 hover:bg-purple-600 uppercase text-white rounded-lg  w-9/12 md:w-8/12 lg:w-6/12 mt-24 h-10 font-bold" />
           </form>
         )}
     </>

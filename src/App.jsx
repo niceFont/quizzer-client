@@ -9,7 +9,7 @@ import NoMatch from './views/NoMatch';
 import Container from './components/Container';
 
 // TODO responsive design
-// TODO build automatic deployment
+// TODO shuffle questions
 const App = () => (
   <Router>
     <NavBar />

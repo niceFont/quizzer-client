@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -21,8 +22,8 @@ const ResultsTable = ({ results }) => (
       </tr>
     </thead>
     <tbody>
-      {results.map((result) => (
-        <tr key={result.question} className="bg-white lg:hover:bg-gray-100 flex lg:table-row flex-row lg:flex-row flex-wrap lg:flex-no-wrap mb-10 lg:mb-0">
+      {results.map((result, index) => (
+        <tr key={result.question + index} className="bg-white lg:hover:bg-gray-100 flex lg:table-row flex-row lg:flex-row flex-wrap lg:flex-no-wrap mb-10 lg:mb-0">
           <td className="w-full lg:w-auto p-3 text-gray-800 text-center border border-b block lg:table-cell relative lg:static">
             <span className="lg:hidden absolute top-0 left-0 bg-blue-200 px-2 py-1 text-xs font-bold uppercase">Question</span>
             {result.question}
@@ -110,6 +111,7 @@ const QuizCard = ({ question, handleInput, id }) => (
   </div>
 );
 
+// REVIEW fix janky transition from questions to result
 const QuizRenderer = ({ quiz }) => {
   const defaultInputState = quiz.questions
     .reduce((acc, question, index) => ({
@@ -153,7 +155,7 @@ const QuizRenderer = ({ quiz }) => {
     },
   };
   return (
-    <div className="p-8 relative mx-auto w-144 items-center flex flex-col justify-center">
+    <div className="p-8 relative mx-auto w-full items-center flex flex-col justify-center">
       <h1 className="mb-4 capitalize font-bold text-purple-800 text-4xl">{quiz.name}</h1>
       {quiz.description && <span className="text-gray-600 ">{quiz.description}</span>}
       <span className="border border-b-1 w-full my-4" />
@@ -174,7 +176,7 @@ const QuizRenderer = ({ quiz }) => {
           {currentNum <= quiz.questions.length && quiz.questions.map((item, index) => (
             <motion.div
               style={{ left: 0, right: 0 }}
-              key={currentNum + item.question}
+              key={index + item.question}
               variants={variants}
               initial="hidden"
               animate="show"
